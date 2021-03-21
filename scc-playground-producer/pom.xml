@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.spring.cloud.countract.demo</groupId>
+        <artifactId>scc-playground-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../</relativePath>
+    </parent>
+
+    <artifactId>scc-playground-producer</artifactId>
+    <packaging>jar</packaging>
+
+    <properties>
+        <spring-cloud-contract.version>3.0.2</spring-cloud-contract.version>
+        <!--  prevent verifier from generation of JAR with contract stubs (because maven-assembly-plugin handles that) -->
+        <spring.cloud.contract.verifier.jar.skip>true</spring.cloud.contract.verifier.jar.skip>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.spring.cloud.countract.demo</groupId>
+            <artifactId>scc-playground-shared</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-contract-verifier</artifactId>
+            <version>${spring-cloud-contract.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-contract-wiremock</artifactId>
+            <version>${spring-cloud-contract.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+            <!-- plugin for generation of contract stubs & tests out of groovy-contracts -->
+            <plugin>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-contract-maven-plugin</artifactId>
+                <extensions>true</extensions>
+                <version>${spring-cloud-contract.version}</version>
+                <configuration>
+                    <packageWithBaseClasses>com.spring.cloud.countract.demo.contract.producer</packageWithBaseClasses>
+                </configuration>
+            </plugin>
+
+            <!-- we want the assembly plugin to generate the JAR with contract stubs -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>stub</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <inherited>false</inherited>
+                        <configuration>
+                            <attach>true</attach>
+                            <descriptors>
+                                ${basedir}/src/assembly/contract-stubs.xml
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
